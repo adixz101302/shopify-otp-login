@@ -190,8 +190,21 @@
         @media (max-width: 700px) {
             th:nth-child(4), td:nth-child(4),
             th:nth-child(5), td:nth-child(5) { display: none; }
-            nav { padding: 14px 16px; }
+            nav { padding: 16px; flex-direction: column; gap: 16px; align-items: flex-start; }
+            .nav-right { width: 100%; justify-content: space-between; }
+            .btn-nav { padding: 8px 12px; font-size: 12px; }
             .main { padding: 20px 12px; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .toolbar { flex-direction: column; align-items: flex-start; }
+            .toolbar-right { width: 100%; flex-direction: column; }
+            .search-input, .filter-select, .btn-refresh { width: 100%; }
+            .table-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 500px; }
+            .nav-brand { font-size: 16px; }
         }
     </style>
 </head>
@@ -303,6 +316,11 @@
     const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db   = getFirestore(app);
+
+    // ── Check Admin Authentication ──────────────────────────────────────────
+    if (sessionStorage.getItem('isAdminAuthenticated') !== 'true') {
+        window.location.href = 'admin-login.html';
+    }
 
     // ── ADMIN UIDs — add your Firebase UID here to protect the admin page ──
     // You can find your UID in Firebase Console → Authentication → Users

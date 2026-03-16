@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Simplify Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-login-card {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .admin-badge-large {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+
+        <main class="login-card admin-login-card">
+            <div class="brand-header">
+                <div class="logo" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
+                    <i class="ri-shield-user-fill"></i>
+                </div>
+                <div class="admin-badge-large">Admin Access</div>
+                <h1>Restricted Area</h1>
+                <p>Enter credentials to access login logs</p>
+            </div>
+
+            <form id="admin-login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <i class="ri-user-line input-icon"></i>
+                        <input type="text" id="username" placeholder="Enter username" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="ri-lock-line input-icon"></i>
+                        <input type="password" id="password" placeholder="Enter password" required 
+                               style="width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px 14px 44px; color: var(--text-main); font-size: 15px; font-family: inherit;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btn-login">
+                    <span class="btn-text">Log In as Admin</span>
+                    <div class="loader hidden"></div>
+                </button>
+            </form>
+
+            <div class="mt-4" style="text-align: center;">
+                <a href="index.html" class="btn-text-only" style="color: var(--text-muted); font-size: 13px;">
+                    <i class="ri-arrow-left-line"></i> Back to Login
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // Simple Admin Authentication
+        // Default Credentials: admin / admin123
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "admin123";
+
+        document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
+            const loader = btn.querySelector('.loader');
+            const text = btn.querySelector('.btn-text');
+
+            // Show loading state
+            text.style.opacity = '0.5';
+            loader.classList.remove('hidden');
+            btn.disabled = true;
+
+            setTimeout(() => {
+                if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                    // Success: Store simple session flag
+                    sessionStorage.setItem('isAdminAuthenticated', 'true');
+                    showToast('Admin access granted!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1000);
+                } else {
+                    // Fail
+                    text.style.opacity = '1';
+                    loader.classList.add('hidden');
+                    btn.disabled = false;
+                    showToast('Invalid credentials', 'error');
+                }
+            }, 800);
+        });
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container') || createToastContainer();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            const icons = {
+                success: '<i class="ri-checkbox-circle-line" style="color:var(--success-color)"></i>',
+                error:   '<i class="ri-error-warning-line" style="color:#ef4444"></i>',
+                info:    '<i class="ri-information-line" style="color:var(--primary-color)"></i>'
+            };
+            toast.innerHTML = `${icons[type] || icons.info} <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function createToastContainer() {
+            const div = document.createElement('div');
+            div.id = 'toast-container';
+            document.body.appendChild(div);
+            return div;
+        }
+    </script>
+</body>
+</html>

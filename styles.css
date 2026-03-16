@@ -556,6 +556,55 @@ input[type="email"]::placeholder {
   to { opacity: 0; transform: translateY(-10px); }
 }
 
+/* Responsive Adjustments for Mobile (Android/iPhone) */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 12px;
+  }
+  
+  .login-card {
+    padding: 32px 20px;
+    border-radius: 20px;
+  }
+
+  .brand-header h1 {
+    font-size: 20px;
+  }
+
+  .brand-header p {
+    font-size: 13px;
+  }
+
+  .tab-btn {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .social-login-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .otp-container {
+    gap: 8px;
+  }
+
+  .otp-input {
+    border-radius: 12px !important;
+    font-size: 20px !important;
+  }
+
+  .btn-primary {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .toast {
+    width: 90%;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+}
+
 /* Recaptcha */
 #recaptcha-container {
   margin-top: 16px;
