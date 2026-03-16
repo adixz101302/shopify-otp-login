@@ -288,6 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
         stepSuccess.classList.add('active');
         document.getElementById('step-description').style.display = 'none';
+        // Redirect to dashboard after a short delay
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
     }
 
 });
@@ -301,12 +303,7 @@ window.loginWithGoogle = function() {
     signInWithPopup(auth, provider)
         .then((result) => {
             showToast('Google login successful!', 'success');
-            // Show success state
-            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step-success').classList.add('active');
-            document.getElementById('step-description').style.display = 'none';
-            document.getElementById('success-desc').textContent =
-                `Welcome, ${result.user.displayName}! Redirecting...`;
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
         }).catch((err) => {
             console.error('Google Login Error:', err);
             if (err.code !== 'auth/popup-closed-by-user') {
