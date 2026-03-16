@@ -127,6 +127,18 @@
             color: #ef4444;
         }
 
+        .btn-admin {
+            text-decoration: none;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-admin:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         /* Main Content */
         .main {
             position: relative;
@@ -320,6 +332,9 @@
             Simplify Login
         </div>
         <div class="nav-right">
+            <a href="admin.html" class="btn-logout btn-admin">
+                <i class="ri-shield-user-line"></i> Admin
+            </a>
             <div class="user-pill">
                 <div class="user-avatar" id="user-initial">?</div>
                 <span class="user-name" id="user-display">Loading...</span>
