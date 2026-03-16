@@ -3,111 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simplify Login - OTP & Biometric Authentication</title>
-    <!-- Use a modern, beautiful font like Inter -->
+    <title>Simplify Login - OTP & Social Authentication</title>
+    <meta name="description" content="Sign in securely using Phone OTP, Email Magic Link, or Google.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Include Remix Icons for sleek, consistent SVGs -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Firebase SDKs -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- Floating decorative shapes in background -->
         <div class="bg-shape shape-1"></div>
         <div class="bg-shape shape-2"></div>
-        
+
         <main class="login-card">
             <div class="brand-header">
                 <div class="logo">
                     <i class="ri-shield-keyhole-fill"></i>
                 </div>
                 <h1>Welcome Back</h1>
-                <p id="step-description">Sign in using your mobile number or email</p>
+                <p id="step-description">Choose a sign-in method below</p>
             </div>
 
-            <!-- STEP 1: Phone / Email Input -->
+            <!-- STEP 1: Login method selection -->
             <div class="form-step active" id="step-input">
-                <form id="contact-form">
-                    <div class="input-group">
-                        <label for="contact-input">Phone or Email</label>
-                        <div class="input-wrapper">
-                            <i class="ri-user-line input-icon"></i>
-                            <input 
-                                type="text" 
-                                id="contact-input" 
-                                placeholder="e.g. +1 234 567 8900 or email@domain.com"
-                                autocomplete="username"
-                                required
-                            >
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary" id="btn-send-otp">
-                        <span class="btn-text">Continue with OTP</span>
-                        <div class="loader hidden"></div>
-                    </button>
-                </form>
 
-                <div class="divider">
-                    <span>Or continue with</span>
+                <!-- Tabs: Phone / Email -->
+                <div class="tab-group">
+                    <button class="tab-btn active" id="tab-phone" onclick="switchTab('phone')">
+                        <i class="ri-smartphone-line"></i> Phone
+                    </button>
+                    <button class="tab-btn" id="tab-email" onclick="switchTab('email')">
+                        <i class="ri-mail-line"></i> Email
+                    </button>
                 </div>
+
+                <!-- Phone Panel -->
+                <div class="tab-panel active" id="panel-phone">
+                    <form id="phone-form">
+                        <div class="input-group">
+                            <label for="phone-input">Phone Number</label>
+                            <div class="input-wrapper">
+                                <i class="ri-smartphone-line input-icon"></i>
+                                <input type="text" id="phone-input" 
+                                    placeholder="+1 650-555-3434 (test number)"
+                                    autocomplete="tel" required>
+                            </div>
+                            <span class="input-hint">Use a Firebase test phone number</span>
+                        </div>
+                        <button type="submit" class="btn-primary" id="btn-send-otp">
+                            <span class="btn-text">Send OTP</span>
+                            <div class="loader hidden"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Email Panel -->
+                <div class="tab-panel" id="panel-email">
+                    <form id="email-form">
+                        <div class="input-group">
+                            <label for="email-input">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="ri-mail-line input-icon"></i>
+                                <input type="email" id="email-input"
+                                    placeholder="you@example.com"
+                                    autocomplete="email" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" id="btn-send-link">
+                            <span class="btn-text">Send Magic Link</span>
+                            <div class="loader hidden"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="divider"><span>Or continue with</span></div>
 
                 <div class="social-login-grid">
-                    <button class="btn-social" onclick="simulateLogin('Google')">
+                    <button class="btn-social" id="btn-google" onclick="loginWithGoogle()">
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google">
+                        <span>Google</span>
                     </button>
-                    <button class="btn-social" onclick="simulateLogin('Apple')">
-                        <i class="ri-apple-fill" style="font-size: 24px;"></i>
+                    <button class="btn-social" id="btn-apple" onclick="showToast('Apple Sign-In coming soon', 'info')">
+                        <i class="ri-apple-fill"></i>
+                        <span>Apple</span>
                     </button>
                 </div>
-
-                <button class="btn-biometrics" onclick="simulateLogin('Biometrics')">
-                    <i class="ri-fingerprint-line"></i>
-                    Use Touch ID or Face ID
-                </button>
             </div>
 
-            <!-- STEP 2: OTP Entry (Hidden initially) -->
+            <!-- STEP 2: Phone OTP Entry -->
             <div class="form-step" id="step-otp">
                 <button type="button" class="btn-back" id="btn-back">
-                    <i class="ri-arrow-left-line"></i>
-                    Back
+                    <i class="ri-arrow-left-line"></i> Back
                 </button>
-                
                 <form id="otp-form">
-                    <div class="otp-container">
-                        <input type="text" class="otp-input" maxlength="1" pattern="\d" required>
-                        <input type="text" class="otp-input" maxlength="1" pattern="\d" required>
-                        <input type="text" class="otp-input" maxlength="1" pattern="\d" required>
-                        <input type="text" class="otp-input" maxlength="1" pattern="\d" required>
-                    </div>
-                    
+                    <div class="otp-container" id="otp-container"></div>
                     <button type="submit" class="btn-primary mt-4" id="btn-verify-otp">
                         <span class="btn-text">Verify & Login</span>
                         <div class="loader hidden"></div>
                     </button>
                 </form>
-
                 <div class="resend-container">
-                    <p>Didn't receive the code? <button type="button" class="btn-text-only" id="btn-resend">Resend (00:30)</button></p>
+                    <p>Didn't receive the code? <button type="button" class="btn-text-only" id="btn-resend">Resend (01:00)</button></p>
                 </div>
             </div>
 
+            <!-- STEP 3: Email Sent Confirmation -->
+            <div class="form-step" id="step-email-sent">
+                <div class="email-sent-icon">
+                    <i class="ri-mail-send-line"></i>
+                </div>
+                <h2>Check your inbox!</h2>
+                <p id="email-sent-desc">A magic sign-in link has been sent to your email. Click it to log in instantly — no password needed.</p>
+                <button class="btn-secondary mt-4" onclick="goBackToInput()">
+                    <i class="ri-arrow-left-line"></i> Use a different method
+                </button>
+            </div>
+
             <!-- Success State -->
-            <div class="form-step success-state" id="step-success">
+            <div class="form-step" id="step-success">
                 <div class="success-icon">
                     <i class="ri-check-line"></i>
                 </div>
                 <h2>Login Successful!</h2>
-                <p>Welcome to our store. Redirecting...</p>
+                <p id="success-desc">Welcome! Redirecting...</p>
             </div>
-            
         </main>
     </div>
 
