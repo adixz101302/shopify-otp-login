@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Login Logs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255,255,255,0.1);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --font: 'Inter', system-ui, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .bg-shape {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .shape-1 { width: 400px; height: 400px; background: radial-gradient(circle, #6366f1, transparent 70%); top: -100px; left: -100px; }
+        .shape-2 { width: 500px; height: 500px; background: radial-gradient(circle, #ec4899, transparent 70%); bottom: -200px; right: -100px; }
+
+        /* NAV */
+        nav {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 12px;
+            font-weight: 700; font-size: 18px;
+        }
+        .nav-logo {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--primary), #ec4899);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .admin-badge {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .btn-nav {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 16px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+            font-family: var(--font);
+            text-decoration: none;
+        }
+        .btn-nav:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* MAIN */
+        .main { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 36px 24px; }
+
+        /* STATS ROW */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-chip {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .stat-chip .icon { font-size: 22px; margin-bottom: 10px; }
+        .stat-chip .val { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .stat-chip .lbl { font-size: 12px; color: var(--muted); }
+        .c-purple { color: #818cf8; }
+        .c-green  { color: #34d399; }
+        .c-pink   { color: #f472b6; }
+        .c-orange { color: #fb923c; }
+
+        /* TOOLBAR */
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .section-title { font-size: 18px; font-weight: 600; }
+        .toolbar-right { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .filter-select, .search-input {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 9px 14px;
+            color: var(--text); font-size: 13px; font-family: var(--font);
+            outline: none; transition: border-color 0.2s;
+        }
+        .filter-select:focus, .search-input:focus { border-color: var(--primary); }
+        .search-input { width: 200px; }
+        .search-input::placeholder { color: var(--muted); }
+
+        .btn-refresh {
+            background: var(--primary); border: none; border-radius: 10px;
+            padding: 9px 18px; color: white; font-size: 13px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            font-family: var(--font); transition: background 0.2s;
+        }
+        .btn-refresh:hover { background: #4f46e5; }
+
+        /* TABLE */
+        .table-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; backdrop-filter: blur(12px);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { border-bottom: 1px solid var(--border); }
+        th {
+            padding: 14px 20px; text-align: left;
+            font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--muted);
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+        td { padding: 14px 20px; font-size: 13px; vertical-align: middle; }
+        .td-muted { color: var(--muted); font-size: 12px; }
+
+        .method-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 6px; padding: 4px 10px;
+            font-size: 11px; font-weight: 600;
+        }
+        .m-google  { background: rgba(66,133,244,0.15); color: #60a5fa; }
+        .m-phone   { background: rgba(16,185,129,0.15); color: #34d399; }
+        .m-email   { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+        .no-data {
+            text-align: center; padding: 60px 20px;
+            color: var(--muted); font-size: 14px;
+        }
+        .no-data i { font-size: 40px; margin-bottom: 12px; display: block; }
+
+        /* Loading overlay */
+        .overlay {
+            position: fixed; inset: 0; background: var(--bg);
+            z-index: 200; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+        }
+        .overlay.hidden { display: none; }
+        .spinner {
+            border: 3px solid var(--border);
+            border-left-color: var(--primary);
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 700px) {
+            th:nth-child(4), td:nth-child(4),
+            th:nth-child(5), td:nth-child(5) { display: none; }
+            nav { padding: 14px 16px; }
+            .main { padding: 20px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay">
+    <div class="spinner"></div>
+    <p style="color:var(--muted);font-size:14px">Loading admin panel...</p>
+</div>
+
+<div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
+
+<nav>
+    <div class="nav-brand">
+        <div class="nav-logo"><i class="ri-shield-keyhole-fill"></i></div>
+        Admin Panel
+        <span class="admin-badge">Restricted</span>
+    </div>
+    <div class="nav-right">
+        <a class="btn-nav" href="dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a>
+        <button class="btn-nav" onclick="logOut()"><i class="ri-logout-box-r-line"></i> Sign Out</button>
+    </div>
+</nav>
+
+<main class="main">
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-chip">
+            <div class="icon c-purple"><i class="ri-user-line"></i></div>
+            <div class="val" id="stat-total">—</div>
+            <div class="lbl">Total Logins</div>
+        </div>
+        <div class="stat-chip">
+            <div class="icon c-green"><i class="ri-smartphone-line"></i></div>
+            <div class="val" id="stat-phone">—</div>
+            <div class="lbl">Phone OTP</div>
+        </div>
+        <div class="stat-chip">
+            <div class="icon c-purple"><i class="ri-mail-line"></i></div>
+            <div class="val" id="stat-email">—</div>
+            <div class="lbl">Email Link</div>
+        </div>
+        <div class="stat-chip">
+            <div class="icon c-pink"><i class="ri-google-line"></i></div>
+            <div class="val" id="stat-google">—</div>
+            <div class="lbl">Google</div>
+        </div>
+        <div class="stat-chip">
+            <div class="icon c-orange"><i class="ri-global-line"></i></div>
+            <div class="val" id="stat-ips">—</div>
+            <div class="lbl">Unique IPs</div>
+        </div>
+    </div>
+
+    <!-- Table toolbar -->
+    <div class="toolbar">
+        <span class="section-title">Login Logs</span>
+        <div class="toolbar-right">
+            <input class="search-input" id="search" type="text" placeholder="Search user or IP..." oninput="renderTable()">
+            <select class="filter-select" id="filter-method" onchange="renderTable()">
+                <option value="">All Methods</option>
+                <option value="google">Google</option>
+                <option value="phone">Phone OTP</option>
+                <option value="email_link">Email Link</option>
+            </select>
+            <button class="btn-refresh" onclick="loadLogs()">
+                <i class="ri-refresh-line"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Method</th>
+                    <th>IP Address</th>
+                    <th>Device / Browser</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="log-table-body">
+                <tr><td colspan="6" class="no-data"><i class="ri-loader-4-line"></i>Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<script type="module">
+    import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCPhGc_I5oEtKPeJP1ca2uYWjc8PzKmMmM",
+        authDomain: "login-module-7b2f3.firebaseapp.com",
+        projectId: "login-module-7b2f3",
+        storageBucket: "login-module-7b2f3.firebasestorage.app",
+        messagingSenderId: "183015095968",
+        appId: "1:183015095968:web:886533d32bdc0acfd5d3c5"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // ── ADMIN UIDs — add your Firebase UID here to protect the admin page ──
+    // You can find your UID in Firebase Console → Authentication → Users
+    const ADMIN_UIDS = [];  // Leave empty to allow any logged-in user for now
+
+    let allLogs = [];
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+        // If ADMIN_UIDS is set, check access
+        if (ADMIN_UIDS.length > 0 && !ADMIN_UIDS.includes(user.uid)) {
+            document.getElementById('overlay').innerHTML =
+                '<div style="text-align:center;padding:40px"><i class="ri-lock-line" style="font-size:48px;color:#ef4444"></i><h2 style="margin-top:16px">Access Denied</h2><p style="color:#94a3b8;margin-top:8px">This page is restricted to administrators</p></div>';
+            return;
+        }
+        document.getElementById('overlay').classList.add('hidden');
+        await loadLogs();
+    });
+
+    window.loadLogs = async function() {
+        const tbody = document.getElementById('log-table-body');
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data"><i class="ri-loader-4-line"></i> Loading...</td></tr>';
+        try {
+            const q = query(collection(db, 'login_logs'), orderBy('timestamp', 'desc'));
+            const snap = await getDocs(q);
+            allLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            updateStats(allLogs);
+            renderTable();
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="6" class="no-data"><i class="ri-error-warning-line"></i> Error loading logs: ${err.message}</td></tr>`;
+        }
+    };
+
+    function updateStats(logs) {
+        document.getElementById('stat-total').textContent  = logs.length;
+        document.getElementById('stat-phone').textContent  = logs.filter(l => l.method === 'phone').length;
+        document.getElementById('stat-email').textContent  = logs.filter(l => l.method === 'email_link').length;
+        document.getElementById('stat-google').textContent = logs.filter(l => l.method === 'google').length;
+        document.getElementById('stat-ips').textContent    = new Set(logs.map(l => l.ipAddress)).size;
+    }
+
+    window.renderTable = function() {
+        const search  = document.getElementById('search').value.toLowerCase();
+        const method  = document.getElementById('filter-method').value;
+        const tbody   = document.getElementById('log-table-body');
+
+        let filtered = allLogs.filter(l => {
+            const matchMethod = !method || l.method === method;
+            const matchSearch = !search ||
+                (l.identifier || '').toLowerCase().includes(search) ||
+                (l.displayName || '').toLowerCase().includes(search) ||
+                (l.ipAddress   || '').toLowerCase().includes(search) ||
+                (l.uid         || '').toLowerCase().includes(search);
+            return matchMethod && matchSearch;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="no-data"><i class="ri-inbox-line"></i><br>No logs found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtered.map((log, i) => {
+            const ts   = log.timestamp ? new Date(log.timestamp.seconds * 1000) : new Date();
+            const time = ts.toLocaleString();
+            const ua   = parseUserAgent(log.userAgent || '');
+            const methodBadge = {
+                google:     '<span class="method-badge m-google"><i class="ri-google-line"></i> Google</span>',
+                phone:      '<span class="method-badge m-phone"><i class="ri-smartphone-line"></i> Phone OTP</span>',
+                email_link: '<span class="method-badge m-email"><i class="ri-mail-line"></i> Email Link</span>'
+            }[log.method] || `<span class="method-badge">${log.method}</span>`;
+
+            return `<tr>
+                <td class="td-muted">${i + 1}</td>
+                <td>
+                    <div style="font-weight:500">${log.displayName !== 'N/A' ? log.displayName : log.identifier}</div>
+                    <div class="td-muted">${log.identifier} · UID: ${(log.uid||'').slice(0,8)}...</div>
+                </td>
+                <td>${methodBadge}</td>
+                <td style="font-family:monospace;font-size:12px">${log.ipAddress || 'Unknown'}</td>
+                <td class="td-muted">${ua}</td>
+                <td class="td-muted">${time}</td>
+            </tr>`;
+        }).join('');
+    };
+
+    function parseUserAgent(ua) {
+        if (!ua) return 'Unknown';
+        let browser = 'Unknown browser';
+        let os = '';
+        if (ua.includes('Firefox')) browser = 'Firefox';
+        else if (ua.includes('Edg')) browser = 'Edge';
+        else if (ua.includes('Chrome')) browser = 'Chrome';
+        else if (ua.includes('Safari')) browser = 'Safari';
+        if (ua.includes('Windows')) os = 'Windows';
+        else if (ua.includes('Mac')) os = 'macOS';
+        else if (ua.includes('Linux')) os = 'Linux';
+        else if (ua.includes('Android')) os = 'Android';
+        else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+        return `${browser}${os ? ' · ' + os : ''}`;
+    }
+
+    window.logOut = async function() {
+        await signOut(auth);
+        window.location.href = 'index.html';
+    };
+</script>
+</body>
+</html>

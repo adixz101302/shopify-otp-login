@@ -9,6 +9,12 @@ import {
     isSignInWithEmailLink,
     signInWithEmailLink
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -23,7 +29,34 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 auth.useDeviceLanguage();
+
+// ─── Log login event to Firestore ────────────────────────────────────────────
+async function logLoginEvent(user, method) {
+    try {
+        // Get user IP from free public API
+        let ipAddress = 'Unknown';
+        try {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            ipAddress = data.ip;
+        } catch (_) {}
+
+        await addDoc(collection(db, 'login_logs'), {
+            uid:        user.uid,
+            identifier: user.email || user.phoneNumber || 'N/A',
+            displayName: user.displayName || 'N/A',
+            method:     method,   // 'phone', 'email_link', 'google'
+            ipAddress:  ipAddress,
+            userAgent:  navigator.userAgent,
+            timestamp:  serverTimestamp()
+        });
+        console.log('Login event logged to Firestore');
+    } catch (err) {
+        console.error('Failed to log login event:', err);
+    }
+}
 
 // ─── Email Link: handle returning from email link on page load ─────────────
 if (isSignInWithEmailLink(auth, window.location.href)) {
@@ -32,8 +65,9 @@ if (isSignInWithEmailLink(auth, window.location.href)) {
         email = window.prompt('Please provide your email for confirmation') || '';
     }
     signInWithEmailLink(auth, email, window.location.href)
-        .then((result) => {
+        .then(async (result) => {
             window.localStorage.removeItem('emailForSignIn');
+            await logLoginEvent(result.user, 'email_link');
             showSuccess(result.user.email || email);
         }).catch((error) => {
             console.error("Email Link Error:", error);
@@ -151,9 +185,10 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleLoading(btn, true);
 
         confirmationResult.confirm(code)
-            .then((result) => {
+            .then(async (result) => {
                 toggleLoading(btn, false);
                 clearInterval(countdownInterval);
+                await logLoginEvent(result.user, 'phone');
                 showSuccess(result.user.phoneNumber || currentPhone);
                 switchStep(stepOTP, stepSuccess);
                 stepDesc.style.display = 'none';
@@ -301,7 +336,8 @@ window.loginWithGoogle = function() {
     showToast('Connecting to Google...', 'info');
 
     signInWithPopup(auth, provider)
-        .then((result) => {
+        .then(async (result) => {
+            await logLoginEvent(result.user, 'google');
             showToast('Google login successful!', 'success');
             setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
         }).catch((err) => {
